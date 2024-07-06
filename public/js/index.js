@@ -12,11 +12,10 @@ myVideo.muted = true;
 const peers = {};
 const videoElements = {}; // Đối tượng lưu trữ các phần tử video
 
-const web = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
+const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 // Yêu cầu quyền truy cập vào video và audio của người dùng
-web.mediaDevices.getUserMedia({
+getUserMedia({
     video: true,
     audio: true
 }).then(stream => {
