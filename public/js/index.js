@@ -1,9 +1,6 @@
-const socket = io();
-const peer = new Peer(undefined, {
-    host: '/',
-    port: '3001'
-});
+const peer = new Peer();
 
+const socket = io();
 const videoGrid = document.getElementById('video-grid');
 const myVideo = document.createElement('video');
 myVideo.muted = true;
@@ -18,7 +15,6 @@ navigator.mediaDevices.getUserMedia({
 }).then(stream => {
     addVideoStream(myVideo, stream);
 
-    // Set up Web Audio API to detect when user is speaking
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioContext = new AudioContext();
     const analyser = audioContext.createAnalyser();
@@ -51,7 +47,6 @@ navigator.mediaDevices.getUserMedia({
         }
     };
 
-    // Lắng nghe sự kiện 'call' từ PeerJS
     peer.on('call', call => {
         call.answer(stream);
         const video = document.createElement('video');
@@ -61,7 +56,6 @@ navigator.mediaDevices.getUserMedia({
         });
     });
 
-    // Lắng nghe sự kiện 'user-connected' từ Socket.io
     socket.on('user-connected', userId => {
         connectToNewUser(userId, stream);
     });
@@ -87,7 +81,6 @@ navigator.mediaDevices.getUserMedia({
     console.error('ERROR! Failed to get user media:', error);
 });
 
-// Lắng nghe sự kiện 'user-disconnected' từ Socket.io
 socket.on('user-disconnected', userId => {
     if (peers[userId]) peers[userId].close();
     if (videoElements[userId]) {
@@ -96,12 +89,10 @@ socket.on('user-disconnected', userId => {
     }
 });
 
-// Khi PeerJS kết nối, gửi sự kiện 'join-room' qua Socket.io
 peer.on('open', id => {
     socket.emit('join-room', ROOM_ID, id);
 });
 
-// Kết nối đến người dùng mới
 function connectToNewUser(userId, stream) {
     const call = peer.call(userId, stream);
     const video = document.createElement('video');
@@ -119,7 +110,6 @@ function connectToNewUser(userId, stream) {
     peers[userId] = call;
 }
 
-// Thêm luồng video vào giao diện
 function addVideoStream(video, stream) {
     video.srcObject = stream;
     video.addEventListener('loadedmetadata', () => {
