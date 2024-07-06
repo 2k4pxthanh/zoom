@@ -1,0 +1,13 @@
+node_modules/
+.env
+npm-debug.log
+yarn-error.log
+/dist
+/build
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+logs/
+*.log
+.bash_history
