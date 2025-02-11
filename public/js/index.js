@@ -1,18 +1,139 @@
+// const peer = new Peer();
+
+// const socket = io();
+// const videoGrid = document.getElementById('video-grid');
+// const myVideo = document.createElement('video');
+// myVideo.muted = true;
+
+// const peers = {};
+// const videoElements = {};
+
+// // Sử dụng navigator.mediaDevices.getUserMedia để yêu cầu quyền truy cập vào video và audio của người dùng
+// navigator.mediaDevices.getUserMedia({
+//     video: true,
+//     audio: true
+// }).then(stream => {
+//     addVideoStream(myVideo, stream);
+
+//     const AudioContext = window.AudioContext || window.webkitAudioContext;
+//     const audioContext = new AudioContext();
+//     const analyser = audioContext.createAnalyser();
+//     const microphone = audioContext.createMediaStreamSource(stream);
+//     const javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+
+//     analyser.smoothingTimeConstant = 0.8;
+//     analyser.fftSize = 1024;
+
+//     microphone.connect(analyser);
+//     analyser.connect(javascriptNode);
+//     javascriptNode.connect(audioContext.destination);
+
+//     let speaking = false;
+//     let silenceThreshold = 23;
+//     let checkInterval = 500;
+
+//     javascriptNode.onaudioprocess = function () {
+//         const array = new Uint8Array(analyser.frequencyBinCount);
+//         analyser.getByteFrequencyData(array);
+//         const volume = array.reduce((a, b) => a + b) / array.length;
+
+//         if (volume > silenceThreshold && !speaking) {
+//             speaking = true;
+//             myVideo.style.border = '4px solid yellow';
+//             setTimeout(() => {
+//                 speaking = false;
+//                 myVideo.style.border = '4px solid #999';
+//             }, checkInterval);
+//         }
+//     };
+
+//     peer.on('call', call => {
+//         call.answer(stream);
+//         const video = document.createElement('video');
+//         call.on('stream', userVideoStream => {
+//             addVideoStream(video, userVideoStream);
+//             videoElements[call.peer] = video;
+//         });
+//     });
+
+//     socket.on('user-connected', userId => {
+//         connectToNewUser(userId, stream);
+//     });
+
+//     const muteButton = document.getElementById('muteButton');
+//     const cameraButton = document.getElementById('cameraButton');
+//     let audioEnabled = true;
+//     let videoEnabled = true;
+
+//     muteButton.addEventListener('click', () => {
+//         audioEnabled = !audioEnabled;
+//         stream.getAudioTracks()[0].enabled = audioEnabled;
+//         muteButton.innerHTML = audioEnabled ? '<i class="bi bi-mic-fill"></i>' : '<i class="bi bi-mic-mute-fill clred"></i>';
+//     });
+
+//     cameraButton.addEventListener('click', () => {
+//         videoEnabled = !videoEnabled;
+//         stream.getVideoTracks()[0].enabled = videoEnabled;
+//         cameraButton.innerHTML = videoEnabled ? '<i class="bi bi-camera-video-fill"></i>' : '<i class="bi bi-camera-video-off-fill clred"></i>';
+//     });
+
+// }).catch(error => {
+//     console.error('ERROR! Failed to get user media:', error);
+// });
+
+// socket.on('user-disconnected', userId => {
+//     if (peers[userId]) peers[userId].close();
+//     if (videoElements[userId]) {
+//         videoElements[userId].remove();
+//         delete videoElements[userId];
+//     }
+// });
+
+// peer.on('open', id => {
+//     socket.emit('join-room', ROOM_ID, id);
+// });
+
+// function connectToNewUser(userId, stream) {
+//     const call = peer.call(userId, stream);
+//     const video = document.createElement('video');
+//     call.on('stream', userVideoStream => {
+//         addVideoStream(video, userVideoStream);
+//         videoElements[userId] = video;
+//     });
+//     call.on('close', () => {
+//         if (videoElements[userId]) {
+//             videoElements[userId].remove();
+//             delete videoElements[userId];
+//         }
+//     });
+
+//     peers[userId] = call;
+// }
+
+// function addVideoStream(video, stream) {
+//     video.srcObject = stream;
+//     video.addEventListener('loadedmetadata', () => {
+//         video.play();
+//     });
+//     videoGrid.append(video);
+// }
 const peer = new Peer();
 
 const socket = io();
-const videoGrid = document.getElementById('video-grid');
-const myVideo = document.createElement('video');
+const videoGrid = document.getElementById("video-grid");
+const myVideo = document.createElement("video");
 myVideo.muted = true;
 
 const peers = {};
 const videoElements = {};
 
-// Sử dụng navigator.mediaDevices.getUserMedia để yêu cầu quyền truy cập vào video và audio của người dùng
-navigator.mediaDevices.getUserMedia({
+// Use navigator.mediaDevices.getUserMedia to request access to the user's video and audio
+navigator.mediaDevices
+  .getUserMedia({
     video: true,
-    audio: true
-}).then(stream => {
+    audio: true,
+  })
+  .then((stream) => {
     addVideoStream(myVideo, stream);
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -29,91 +150,95 @@ navigator.mediaDevices.getUserMedia({
     javascriptNode.connect(audioContext.destination);
 
     let speaking = false;
-    let silenceThreshold = 23;
-    let checkInterval = 500;
+    const silenceThreshold = 23;
+    const checkInterval = 500;
 
     javascriptNode.onaudioprocess = function () {
-        const array = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(array);
-        const volume = array.reduce((a, b) => a + b) / array.length;
+      const array = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(array);
+      const volume = array.reduce((a, b) => a + b) / array.length;
 
-        if (volume > silenceThreshold && !speaking) {
-            speaking = true;
-            myVideo.style.border = '4px solid yellow';
-            setTimeout(() => {
-                speaking = false;
-                myVideo.style.border = '4px solid #999';
-            }, checkInterval);
-        }
+      if (volume > silenceThreshold && !speaking) {
+        speaking = true;
+        myVideo.style.border = "4px solid yellow";
+        setTimeout(() => {
+          speaking = false;
+          myVideo.style.border = "4px solid #999";
+        }, checkInterval);
+      }
     };
 
-    peer.on('call', call => {
-        call.answer(stream);
-        const video = document.createElement('video');
-        call.on('stream', userVideoStream => {
-            addVideoStream(video, userVideoStream);
-            videoElements[call.peer] = video;
-        });
+    peer.on("call", (call) => {
+      call.answer(stream);
+      const video = document.createElement("video");
+      call.on("stream", (userVideoStream) => {
+        addVideoStream(video, userVideoStream);
+        videoElements[call.peer] = video;
+      });
     });
 
-    socket.on('user-connected', userId => {
-        connectToNewUser(userId, stream);
+    socket.on("user-connected", (userId) => {
+      connectToNewUser(userId, stream);
     });
 
-    const muteButton = document.getElementById('muteButton');
-    const cameraButton = document.getElementById('cameraButton');
+    const muteButton = document.getElementById("muteButton");
+    const cameraButton = document.getElementById("cameraButton");
     let audioEnabled = true;
     let videoEnabled = true;
 
-    muteButton.addEventListener('click', () => {
-        audioEnabled = !audioEnabled;
-        stream.getAudioTracks()[0].enabled = audioEnabled;
-        muteButton.innerHTML = audioEnabled ? '<i class="bi bi-mic-fill"></i>' : '<i class="bi bi-mic-mute-fill clred"></i>';
+    muteButton.addEventListener("click", () => {
+      audioEnabled = !audioEnabled;
+      stream.getAudioTracks()[0].enabled = audioEnabled;
+      muteButton.innerHTML = audioEnabled
+        ? '<i class="bi bi-mic-fill"></i>'
+        : '<i class="bi bi-mic-mute-fill clred"></i>';
     });
 
-    cameraButton.addEventListener('click', () => {
-        videoEnabled = !videoEnabled;
-        stream.getVideoTracks()[0].enabled = videoEnabled;
-        cameraButton.innerHTML = videoEnabled ? '<i class="bi bi-camera-video-fill"></i>' : '<i class="bi bi-camera-video-off-fill clred"></i>';
+    cameraButton.addEventListener("click", () => {
+      videoEnabled = !videoEnabled;
+      stream.getVideoTracks()[0].enabled = videoEnabled;
+      cameraButton.innerHTML = videoEnabled
+        ? '<i class="bi bi-camera-video-fill"></i>'
+        : '<i class="bi bi-camera-video-off-fill clred"></i>';
     });
+  })
+  .catch((error) => {
+    console.error("ERROR! Failed to get user media:", error);
+  });
 
-}).catch(error => {
-    console.error('ERROR! Failed to get user media:', error);
+socket.on("user-disconnected", (userId) => {
+  if (peers[userId]) peers[userId].close();
+  if (videoElements[userId]) {
+    videoElements[userId].remove();
+    delete videoElements[userId];
+  }
 });
 
-socket.on('user-disconnected', userId => {
-    if (peers[userId]) peers[userId].close();
-    if (videoElements[userId]) {
-        videoElements[userId].remove();
-        delete videoElements[userId];
-    }
-});
-
-peer.on('open', id => {
-    socket.emit('join-room', ROOM_ID, id);
+peer.on("open", (id) => {
+  socket.emit("join-room", ROOM_ID, id);
 });
 
 function connectToNewUser(userId, stream) {
-    const call = peer.call(userId, stream);
-    const video = document.createElement('video');
-    call.on('stream', userVideoStream => {
-        addVideoStream(video, userVideoStream);
-        videoElements[userId] = video;
-    });
-    call.on('close', () => {
-        if (videoElements[userId]) {
-            videoElements[userId].remove();
-            delete videoElements[userId];
-        }
-    });
+  const call = peer.call(userId, stream);
+  const video = document.createElement("video");
+  call.on("stream", (userVideoStream) => {
+    addVideoStream(video, userVideoStream);
+    videoElements[userId] = video;
+  });
+  call.on("close", () => {
+    if (videoElements[userId]) {
+      videoElements[userId].remove();
+      delete videoElements[userId];
+    }
+  });
 
-    peers[userId] = call;
+  peers[userId] = call;
 }
 
 function addVideoStream(video, stream) {
-    video.srcObject = stream;
-    video.addEventListener('loadedmetadata', () => {
-        video.play();
-    });
-    videoGrid.append(video);
+  video.srcObject = stream;
+  video.addEventListener("loadedmetadata", () => {
+    video.play();
+  });
+  videoGrid.append(video);
 }
